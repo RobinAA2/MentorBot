@@ -19,7 +19,8 @@ class Robot : public frc::TimedRobot {
 
   frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
 
-  frc::Joystick m_stick{0};
+  frc::Joystick m_stick_left{0};
+  frc::Joystick m_stick_right{1};
 
  public:
   Robot()
@@ -38,7 +39,7 @@ class Robot : public frc::TimedRobot {
 
   void TeleopPeriodic() override
   {
-    m_robotDrive.ArcadeDrive(-m_stick.GetY(), m_stick.GetX());
+    m_robotDrive.TankDrive(m_stick_left.GetY(), m_stick_right.GetY());
   }
 };
 

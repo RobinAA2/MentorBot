@@ -5,36 +5,40 @@
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
 #include <frc/drive/DifferentialDrive.h>
-#include <frc/motorcontrol/PWMSparkMax.h>
+#include "rev/CANSparkMax.h"
 
 /**
  * This is a demo program showing the use of the DifferentialDrive class.
  * Runs the motors with arcade steering.
  */
 class Robot : public frc::TimedRobot {
-  frc::PWMSparkMax m_leftMotor{0};
-  frc::PWMSparkMax m_rightMotor{1};
-  frc::DifferentialDrive m_robotDrive{
-      [&](double output) { m_leftMotor.Set(output); },
-      [&](double output) { m_rightMotor.Set(output); }};
+  rev::CANSparkMax m_leftLeadMotor{1, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_rightLeadMotor{2, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_leftFollowMotor{3, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_rightFollowMotor{4, rev::CANSparkMax::MotorType::kBrushless};
+
+  frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
+
   frc::Joystick m_stick{0};
 
  public:
-  Robot() {
-    wpi::SendableRegistry::AddChild(&m_robotDrive, &m_leftMotor);
-    wpi::SendableRegistry::AddChild(&m_robotDrive, &m_rightMotor);
+  Robot()
+  {}
+
+  void RobotInit() override
+  {
+    m_leftLeadMotor.RestoreFactoryDefaults();
+    m_rightLeadMotor.RestoreFactoryDefaults();
+    m_leftFollowMotor.RestoreFactoryDefaults();
+    m_rightFollowMotor.RestoreFactoryDefaults();
+
+    m_leftFollowMotor.Follow(m_leftLeadMotor);
+    m_rightFollowMotor.Follow(m_rightLeadMotor);
   }
 
-  void RobotInit() override {
-    // We need to invert one side of the drivetrain so that positive voltages
-    // result in both sides moving forward. Depending on how your robot's
-    // gearbox is constructed, you might have to invert the left side instead.
-    m_rightMotor.SetInverted(true);
-  }
-
-  void TeleopPeriodic() override {
-    // Drive with arcade style
-    m_robotDrive.ArcadeDrive(-m_stick.GetY(), -m_stick.GetX());
+  void TeleopPeriodic() override
+  {
+    m_robotDrive.ArcadeDrive(-m_stick.GetY(), m_stick.GetX());
   }
 };
 
